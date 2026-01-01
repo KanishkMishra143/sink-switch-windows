@@ -28,7 +28,7 @@ jobs:
 
       - name: Build Binary
         working-directory: ./windows/go-version
-        run: go build -ldflags "-H windowsgui" -o sink-switch.exe
+        run: go build -o sink-switch.exe
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

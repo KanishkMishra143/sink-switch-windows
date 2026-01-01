@@ -23,6 +23,7 @@ type Config struct {
 }
 
 const (
+	AppName     = "SinkSwitch"
 	ConfigFile  = "config.json"
 	VTableIndex = 12 // Confirmed working index for this system
 )
@@ -40,9 +41,17 @@ type AudioDevice struct {
 }
 
 func main() {
-	// Parse Flags
+	// 1. Parse Flags
 	cycleMode := flag.Bool("cycle", false, "Cycle through configured devices (CLI mode)")
+	listMode := flag.Bool("list", false, "List all available audio devices and exit")
 	flag.Parse()
+
+	// 2. Console Management
+	// If no CLI flags are set, we assume GUI mode.
+	// Since we are building as a Console app (to fix CLI glitching), we must manually hide the console window.
+	if !*cycleMode && !*listMode {
+		hideConsole()
+	}
 
 	// Ensure COM is ready for whatever happens next
 	if err := ole.CoInitializeEx(0, ole.COINIT_APARTMENTTHREADED); err != nil {
@@ -50,12 +59,40 @@ func main() {
 	}
 	defer ole.CoUninitialize()
 
+	if *listMode {
+		runList()
+		return
+	}
+
 	if *cycleMode {
 		runCycle()
 	} else {
 		// Launch GUI
 		RunDashboard()
 	}
+}
+
+func hideConsole() {
+	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	user32 := syscall.NewLazyDLL("user32.dll")
+
+	getConsoleWindow := kernel32.NewProc("GetConsoleWindow")
+	showWindow := user32.NewProc("ShowWindow")
+
+	hwnd, _, _ := getConsoleWindow.Call()
+	if hwnd != 0 {
+		// SW_HIDE = 0
+		showWindow.Call(hwnd, 0)
+	}
+}
+
+func runList() {
+	devices, err := getAudioDevices()
+	if err != nil {
+		log.Fatal(err)
+	}
+	currentID, _ := getDefaultDeviceID()
+	printDevices(devices, currentID)
 }
 
 func runCycle() {
@@ -83,7 +120,8 @@ func runCycle() {
 	} else if len(config.Devices) > 0 {
 		cycleList = filterDevices(allDevices, config.Devices)
 		if len(cycleList) < 2 {
-			fmt.Println("Warning: Config matches < 2 devices. Falling back to all.")
+			// fallback silently or warn? Warn is better for CLI.
+			// fmt.Println("Warning: Config matches < 2 devices. Falling back to all.")
 			cycleList = allDevices
 		}
 	} else {
@@ -168,16 +206,19 @@ func saveConfig(cfg *Config) error {
 }
 
 func getConfigPath() (string, error) {
-	exePath, err := os.Executable()
+	// Standard Location: %APPDATA%\SinkSwitch\config.json
+	configDir, err := os.UserConfigDir()
 	if err != nil {
-		return "", err
+		// Fallback to local directory if we can't get user config dir
+		return ConfigFile, nil
 	}
-	cwd, _ := os.Getwd()
-	localConfig := filepath.Join(cwd, ConfigFile)
-	if _, err := os.Stat(localConfig); err == nil {
-		return localConfig, nil
+
+	appDir := filepath.Join(configDir, AppName)
+	if err := os.MkdirAll(appDir, 0755); err != nil {
+		return ConfigFile, nil
 	}
-	return filepath.Join(filepath.Dir(exePath), ConfigFile), nil
+
+	return filepath.Join(appDir, ConfigFile), nil
 }
 
 func filterDevices(all []AudioDevice, patterns []string) []AudioDevice {

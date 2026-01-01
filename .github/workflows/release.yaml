@@ -26,6 +26,12 @@ jobs:
         working-directory: ./windows/go-version
         run: go mod download
 
+      - name: Generate Resources
+        working-directory: ./windows/go-version
+        run: |
+          go install github.com/akavel/rsrc@latest
+          rsrc -manifest sink-switch.exe.manifest -o rsrc.syso
+
       - name: Build Binary
         working-directory: ./windows/go-version
         run: go build -o sink-switch.exe

@@ -1,12 +1,18 @@
 package main
 
 import (
+	_ "embed"
+	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/lxn/walk"
 	. "github.com/lxn/walk/declarative"
 )
+
+//go:embed logo.ico
+var iconData []byte
 
 // RunDashboard launches the GUI
 func RunDashboard() {
@@ -30,14 +36,23 @@ func RunDashboard() {
 	// Prepare Model
 	model = NewDeviceModel(allDevices, config.Devices, currentID)
 
-	// Try to load icon from standard resource IDs (rsrc usually uses 7 or 3 when manifest is present)
-	icon, err := walk.NewIconFromResourceId(7)
-	if err != nil {
-		icon, err = walk.NewIconFromResourceId(3)
-	}
-
-	if err != nil {
-		log.Printf("Warning: Could not load icon from resource ID 7 or 3: %v", err)
+	// --- Icon Loading (Embed Strategy) ---
+	var icon *walk.Icon
+	
+	// Write embedded icon to temp file so walk can load it
+	tmpFile, err := ioutil.TempFile("", "sink-switch-icon-*.ico")
+	if err == nil {
+		defer os.Remove(tmpFile.Name()) // Clean up
+		if _, err := tmpFile.Write(iconData); err == nil {
+			tmpFile.Close()
+			// Load from the temp file
+			icon, err = walk.NewIconFromFile(tmpFile.Name())
+			if err != nil {
+				log.Printf("Warning: Failed to load icon from temp file: %v", err)
+			}
+		}
+	} else {
+		log.Printf("Warning: Failed to create temp icon file: %v", err)
 	}
 
 	// Define Layout

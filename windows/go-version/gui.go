@@ -34,6 +34,7 @@ func RunDashboard() {
 	if _, err := (MainWindow{
 		AssignTo: &mainWindow,
 		Title:    "Sink Switch Dashboard",
+		Icon:     1, // Use embedded icon (Resource ID 1)
 		MinSize:  Size{Width: 400, Height: 500},
 		Layout:   VBox{},
 		Children: []Widget{

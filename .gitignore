@@ -1,5 +1,6 @@
 CONTEXT.md
 *.exe
 *.dll
-go-version/config.json
+windows/config.json
+windows/sink-switch.exe
 tmp/

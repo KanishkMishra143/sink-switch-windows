@@ -37,10 +37,9 @@ func RunDashboard() {
 	}
 
 	// Define Layout
-	if _, err := (MainWindow{
+	mw := MainWindow{
 		AssignTo: &mainWindow,
 		Title:    "Sink Switch Dashboard",
-		Icon:     icon, // Will be nil if failed, which walk handles gracefully (default icon)
 		MinSize:  Size{Width: 400, Height: 500},
 		Layout:   VBox{},
 		Children: []Widget{
@@ -127,7 +126,13 @@ func RunDashboard() {
 				TextColor: walk.RGB(100, 100, 100),
 			},
 		},
-	}).Run(); err != nil {
+	}
+
+	if icon != nil {
+		mw.Icon = icon
+	}
+
+	if _, err := mw.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

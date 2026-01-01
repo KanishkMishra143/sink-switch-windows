@@ -1,28 +1,70 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Background Circle (Optional, cleaner look) -->
-  <circle cx="256" cy="256" r="240" fill="#f3f4f6" />
-  
-  <!-- Speaker Icon -->
-  <path d="M140 180 L140 332 L220 332 L300 412 L300 100 L220 180 Z" fill="url(#grad1)" stroke="#1f2937" stroke-width="12" stroke-linejoin="round"/>
-  
-  <!-- Sound Waves (Left side, suggesting input/sink) -->
-  <path d="M100 200 Q 80 256 100 312" stroke="#1f2937" stroke-width="16" fill="none" stroke-linecap="round"/>
-  
-  <!-- Cycling Arrows (The "Switch" aspect) -->
-  <path d="M360 180 A 80 80 0 0 1 420 256" stroke="#1f2937" stroke-width="20" fill="none" stroke-linecap="round" marker-end="url(#arrowhead)"/>
-  <path d="M420 350 A 80 80 0 0 1 360 426" stroke="#1f2937" stroke-width="20" fill="none" stroke-linecap="round"/>
-  
-  <!-- Arrowhead definition -->
-  <defs>
-    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#1f2937" />
-    </marker>
-  </defs>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+    width="512"
+    height="512"
+    viewBox="0 0 512 512"
+    xmlns="http://www.w3.org/2000/svg"
+    role="img"
+    aria-label="Sink Switch logo">
+
+    <!-- Background -->
+    <rect width="512" height="512" rx="96" fill="#0f172a"/>
+
+    <!-- Upper arc -->
+    <path
+        d="M140 256
+           a116 116 0 0 1 232 0"
+        fill="none"
+        stroke="#e5e7eb"
+        stroke-width="28"
+        stroke-linecap="round"/>
+
+    <!-- Lower arc -->
+    <path
+        d="M372 256
+           a116 116 0 0 1 -232 0"
+        fill="none"
+        stroke="#e5e7eb"
+        stroke-width="28"
+        stroke-linecap="round"/>
+
+    <!-- Right arrowhead (side=70, rotated 90° CW, pointing DOWN) -->
+    <polygon
+        points="
+          372,291
+          341.69,256
+          402.31,256
+        "
+        fill="#e5e7eb"/>
+
+    <!-- Left arrowhead (side=70, rotated 90° CW, pointing UP) -->
+    <polygon
+        points="
+          140,221
+          109.69,256
+          170.31,256
+        "
+        fill="#e5e7eb"/>
+
+    <!-- Speaker (centered at 256,256) -->
+    <polygon
+        points="
+          221,210
+          255,210
+          291,176
+          291,336
+          255,302
+          221,302
+        "
+        fill="#e5e7eb"/>
+
+    <!-- Sound wave -->
+    <path
+        d="M306 230
+           q26 26 0 52"
+        fill="none"
+        stroke="#e5e7eb"
+        stroke-width="16"
+        stroke-linecap="round"/>
+
 </svg>

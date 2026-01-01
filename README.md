@@ -1,67 +1,97 @@
-# sink-switch for Windows
+# Sink Switch
 
-A powerful command-line and hotkey-driven utility to quickly switch between your audio playback devices on Windows.
+<p align="center">
+  <img src="logo.svg" width="200" alt="Sink Switch Logo">
+</p>
 
-This script allows you to create a curated list of your favorite audio devices and cycle through them with a simple command or a global hotkey, complete with rich toast notifications.
+**Sink Switch** is a lightweight, high-performance Windows utility that allows you to toggle your default audio playback device (Speakers, Headphones, TV, etc.) instantly with a global hotkey.
 
-## Features
+Unlike other tools, Sink Switch is **smart**: it remembers your last toggle state, making it perfect for complex setups involving audio enhancers like **FxSound**, where the active device might not always reflect the target hardware.
 
-- **Device Management:**
-  - **List:** See all available audio devices with their readable names and command-line IDs.
-  - **Visual Config:** A graphical interface (GUI) to easily check/uncheck devices to include in your cycle.
-  - **Initialize:** Automatically generates a configuration file.
-- **User-Controlled Cycling:**
-  - **Smart Cycling:** Switch in a simple, predictable round-robin order (A -> B -> C -> A).
-  - **State Memory:** Remembers the last cycled device, even if you manually switch devices in between.
-- **Direct Access:** Instantly switch to any audio device by its ID.
-- **Visual Feedback:** Displays a native Windows toast notification (with icon) on every successful switch, whether triggered via CLI or Hotkey.
-- **Global Hotkeys:** Comes with an optimized AutoHotkey script to bind cycling to `Alt + Mute` (customizable).
-- **Automated Installer:** Includes a setup script to handle dependencies, download tools, and create startup shortcuts.
+---
 
-## Dependencies
+## 🚀 Features
 
-1.  **PowerShell:** Included with all modern versions of Windows.
-2.  **SoundVolumeView.exe:** Automatically downloaded by the installer.
-3.  **BurntToast PowerShell Module:** Automatically installed by the installer.
-4.  **AutoHotkey (Optional):** Required only for global hotkeys.
+- **⚡ Instant Switching:** Written in Go for native performance. Directly talks to Windows Core Audio APIs (COM).
+- **🖥️ Dashboard UI:** Includes a native Windows GUI to easily select which devices you want to cycle through.
+- **🧠 Smart Memory:** Remembers exactly which device was last active, ensuring 100% reliable cycling even if virtual audio drivers (like FxSound or Voicemeeter) mask the real hardware.
+- **⌨️ Global Hotkey:** Comes with an AutoHotkey script to bind `Alt + Mute` (or any key you like) to the switcher.
+- **🪶 Lightweight:** Single binary, minimal resource usage.
 
-## Installation & Setup
+---
 
-1.  **Run the Installer:**
-    Open a PowerShell terminal in the project directory and run the installer. This script will download `SoundVolumeView`, install the notification module, initialize your config, and create a startup shortcut for hotkeys.
-    ```powershell
-    .\install.ps1
-    ```
+## 📥 Installation
 
-2.  **Configure Devices:**
-    To choose which devices are included in your toggle cycle, run the UI command:
-    ```powershell
-    .\sink-switch.ps1 ui
-    ```
-    A window will appear allowing you to check or uncheck devices.
+1.  **Download:** Go to the [Releases](https://github.com/YOUR_USERNAME/sink-switch/releases) page and download `sink-switch.exe`.
+2.  **Place it:** Move the `.exe` to a permanent location (e.g., `D:\My Apps\sink-switch\`).
+3.  **Hotkey Setup:**
+    *   Install [AutoHotkey](https://www.autohotkey.com/) (v1.1 or v2).
+    *   Download the `keybindings.ahk` file (or create one, see below).
+    *   Double-click `keybindings.ahk` to run it. (Right-click -> "Compile" to make it a standalone executable if you prefer).
 
-## Usage (Command Line)
+---
 
-All commands can be run from a PowerShell terminal.
+## ⚙️ Configuration
 
-- **`list` (alias: `ls`)**: Lists all available audio devices and their IDs.
-- **`ui` (alias: `gui`)**: Opens the graphical configuration window.
-- **`cycle` (alias: `cy`)**: Switches to the next device in your enabled list.
-- **`set <DeviceID>` (alias: `s`)**: Sets a specific audio device as the default and updates the cycle position.
-- **`current` (alias: `c`)**: Shows the current default playback and recording devices.
-- **`init`**: Re-initializes the configuration file (WARNING: Overwrites existing config).
+### 1. The Dashboard
+Double-click `sink-switch.exe` to open the **Dashboard**.
 
-## Usage (Global Hotkeys)
+*   **Check** the boxes next to the devices you want to include in your toggle cycle (e.g., "Speakers (Realtek)" and "USB Audio").
+*   **Double-click** any device name to switch to it immediately.
+*   Click **"Save Config"** to save your preferences to `config.json`.
 
-If you ran the installer, the hotkey script (`keybindings.ahk`) is already set to start with Windows.
+### 2. The Hotkey (CLI Mode)
+The switcher has a hidden "CLI Mode" optimized for speed.
+Command: `sink-switch.exe -cycle`
 
-- **Default Hotkey:** Press `Alt + Mute` (`!Volume_Mute`) to cycle devices.
-- **Feedback:** You will see a Windows Toast notification showing the newly selected device.
-- **Customize:** You can edit `keybindings.ahk` to change the key combination if desired, then reload the script.
+This reads your config, finds the next device in the loop, and switches to it instantly.
 
-## Future Development
+**Example `keybindings.ahk`:**
+```autohotkey
+; Alt + Mute to Toggle Audio Devices
+!Volume_Mute::
+    Run, "path\to\sink-switch.exe" -cycle, path\to, Hide
+return
+```
 
-The current PowerShell version is a fully functional prototype. The next phase of development is a complete rewrite in **Go** to provide:
-- A single, standalone `.exe` with zero dependencies.
-- Native performance using Windows Core Audio APIs.
-- Built-in global hotkey support (removing the need for AutoHotkey).
+---
+
+## 🛠️ How it Works (Under the Hood)
+
+Windows Audio APIs are complex. Most switchers just check "What is the current default?" and switch to the next one.
+**The problem:** If you use **FxSound**, the "Current Default" is *always* FxSound. A normal switcher gets stuck in a loop, trying to switch away from FxSound and failing to track state.
+
+**The Sink Switch Solution:**
+We store a `last_device_id` in `config.json`.
+1.  When you press the hotkey, we read `config.json`.
+2.  We see you were last on "Speakers A".
+3.  We ignore what Windows *says* is active (which might be FxSound) and confidently switch the hardware to "Speakers B".
+4.  We update the config: `last_device_id = Speakers B`.
+
+This ensures perfect cycling every time.
+
+---
+
+## 🏗️ Building from Source
+
+Requirements: **Go 1.20+**
+
+```bash
+# Clone the repo
+git clone https://github.com/your-repo/sink-switch.git
+cd sink-switch/go-version
+
+# Install dependencies
+go get github.com/lxn/walk
+go get github.com/go-ole/go-ole
+go get github.com/moutend/go-wca
+
+# Build (Hides console window for GUI)
+go build -ldflags "-H windowsgui" -o sink-switch.exe
+```
+
+---
+
+## 📄 License
+
+MIT License. Free to use and modify.

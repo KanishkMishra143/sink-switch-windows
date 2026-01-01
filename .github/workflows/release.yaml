@@ -1,0 +1,43 @@
+name: Build and Release
+
+# Trigger the workflow only when a tag starting with 'v' is pushed (e.g. v1.0.0)
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  build:
+    name: Build Windows Binary
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25" # Or your specific version
+
+      - name: Install Dependencies
+        working-directory: ./go-version
+        run: |
+          go get github.com/lxn/walk
+          go get github.com/go-ole/go-ole
+          go get github.com/moutend/go-wca
+          # Ensure manifest is ready (if you have specific logic, otherwise it's just a file)
+
+      - name: Build Binary
+        working-directory: ./go-version
+        # -H windowsgui hides the console window. -o sets output name.
+        run: go build -ldflags "-H windowsgui" -o sink-switch.exe
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: go-version/sink-switch.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true

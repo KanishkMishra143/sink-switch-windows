@@ -30,7 +30,7 @@ jobs:
         working-directory: ./windows/go-version
         run: |
           go install github.com/akavel/rsrc@latest
-          rsrc -manifest sink-switch.exe.manifest -ico logo.ico -arch amd64 -o rsrc.syso
+          rsrc -manifest sink-switch.exe.manifest -ico logo.ico -id 1 -arch amd64 -o rsrc.syso
 
       - name: Build Binary
         working-directory: ./windows/go-version

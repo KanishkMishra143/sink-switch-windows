@@ -1,1 +1,5 @@
 CONTEXT.md
+*.exe
+*.dll
+go-version/config.json
+tmp/
